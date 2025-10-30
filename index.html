@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Practice Tracker</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;background:#f7fafc;color:#111;display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .card{width:900px;max-width:96%;background:white;border-radius:12px;box-shadow:0 8px 24px rgba(17,24,39,.08);padding:22px}
+    h1{margin:0;font-size:22px}
+    .sub{color:#6b7280;margin-top:6px;font-size:13px}
+    .id{margin-top:12px;font-weight:700;background:#eef2ff;color:#3730a3;padding:8px 10px;border-radius:8px;display:inline-block}
+    .progress{height:12px;background:#e6eef8;border-radius:10px;overflow:hidden;margin-top:12px}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#06b6d4);transition:width 500ms ease}
+    .timeline{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+    .event{display:flex;align-items:flex-start;gap:12px}
+    .dot{width:12px;height:12px;border-radius:50%;background:#c7d2fe;margin-top:6px;flex:0 0 12px}
+    .event .title{font-weight:700}
+    .time{margin-left:auto;color:#6b7280;font-size:13px;min-width:120px;text-align:right}
+    .controls{margin-top:14px;display:flex;gap:8px;align-items:center}
+    button{padding:8px 12px;border-radius:8px;border:0;background:#111827;color:white;cursor:pointer;font-weight:700}
+    button.ghost{background:transparent;color:#111827;border:1px solid #e6e9ef}
+    small.note{display:block;margin-top:10px;color:#6b7280}
+    footer{margin-top:12px;color:#9ca3af;font-size:13px}
+    @media (max-width:520px){.time{min-width:80px;font-size:12px}}
+  </style>
+</head>
+<body>
+  <div class="card" role="application" aria-label="Practice tracking page">
+    <h1>Practice Tracker</h1>
+    <div class="sub">This is a demonstration tracker page for practice editing on GitHub Pages.</div>
+    <div class="id" id="pkgId">Delivery ID: PRACTICE-001</div>
+
+    <div class="progress" aria-hidden="true">
+      <div class="bar" id="bar"></div>
+    </div>
+
+    <div class="timeline" id="timeline" aria-live="polite" aria-atomic="true"></div>
+
+    <div class="controls">
+      <button id="prevBtn" class="ghost">← Prev</button>
+      <button id="nextBtn">Next →</button>
+      <button id="resetBtn" class="ghost">Reset</button>
+      <label style="margin-left:auto;font-size:13px;color:#6b7280">Speed:
+        <select id="speed" style="margin-left:6px;padding:6px;border-radius:6px">
+          <option value="3000">Fast</option>
+          <option value="6000" selected>Normal</option>
+          <option value="12000">Slow</option>
+        </select>
+      </label>
+    </div>
+
+    <small class="note">Tip: To update this page on GitHub Pages, edit the <code>steps</code> array in this file via the GitHub web editor and commit changes.</small>
+    <footer>This is for practice/learning only.</footer>
+  </div>
+
+<script>
+/*
+  EDITABLE AREA FOR GITHUB WEB EDITOR:
+  Replace the contents of the array `steps` below when you edit this file in GitHub.
+  Each item has: timeOffset (minutes), timeLabel (string), location, status.
+  When you edit the file in GitHub, search for "const steps =" to find this block easily.
+*/
+const steps = [
+  {timeOffset:0, timeLabel: "Now", location: "Order received", status: "Order received — preparing item"},
+  {timeOffset:30, timeLabel: "In 30 min", location: "Preparation", status: "Item being prepped for delivery"},
+  {timeOffset:90, timeLabel: "In 1.5 hr", location: "On the road", status: "Courier en route"},
+  {timeOffset:180, timeLabel: "In 3 hr", location: "Near destination", status: "Near destination — getting close"},
+  {timeOffset:240, timeLabel: "Soon", location: "Out for delivery", status: "Out for delivery — check area"},
+  {timeOffset:300, timeLabel: "Delivered", location: "Delivered", status: "Delivered — practice complete"}
+];
+
+(function(){
+  let idx = 0;
+  const timeline = document.getElementById('timeline');
+  const bar = document.getElementById('bar');
+  const pkgId = document.getElementById('pkgId');
+
+  function fmtNow(minOffset){ const d=new Date(); d.setMinutes(d.getMinutes()+minOffset); return d.toLocaleString(undefined,{hour:'2-digit',minute:'2-digit',month:'short',day:'numeric'}); }
+  function renderTimeline(){
+    timeline.innerHTML = '';
+    for(let i=0;i<steps.length;i++){
+      const ev = document.createElement('div');
+      ev.className = 'event';
+      ev.innerHTML = '<div class="dot" aria-hidden="true"></div>' +
+                     '<div style="max-width:70%"><div class="title">' + steps[i].location + '</div>' +
+                     '<div style="color:#6b7280;font-size:13px;margin-top:3px">' + steps[i].status + '</div></div>' +
+                     '<div class="time">' + (steps[i].timeLabel || fmtNow(steps[i].timeOffset)) + '</div>';
+      ev.style.opacity = (i <= idx) ? '1' : '0.45';
+      timeline.appendChild(ev);
+    }
+    const pct = Math.round((idx) / (steps.length - 1) * 100);
+    bar.style.width = pct + '%';
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', ()=>{ if(idx < steps.length-1) idx++; renderTimeline(); });
+  document.getElementById('prevBtn').addEventListener('click', ()=>{ if(idx > 0) idx--; renderTimeline(); });
+  document.getElementById('resetBtn').addEventListener('click', ()=>{ idx = 0; renderTimeline(); });
+  // double-tap ID to edit locally in browser
+  pkgId.addEventListener('dblclick', ()=>{
+    const cur = pkgId.textContent.replace('Delivery ID:','').trim();
+    const v = prompt('Edit Delivery ID:', cur);
+    if(v) pkgId.textContent = 'Delivery ID: ' + v;
+  });
+
+  renderTimeline();
+})();
+</script>
+</body>
+</html>
